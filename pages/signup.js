@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { HeaderMessage, FooterMessage } from "../components/common/Welcome";
 import SocialInput from "../components/common/SocialInput";
+import DragImageUpload from "../components/common/DragImageUpload";
 export const regexUserName = /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}$/;
 import {
 	Form,
@@ -30,14 +31,23 @@ function signup() {
 	const [userNameAvailable, setUserNameAvailable] = useState(false);
 	const [showSocialLinks, setShowSocialLinks] = useState(false);
 	const [desableSubmit, setDesableSubmit] = useState(true);
-
+	const [media, setMedia] = useState(null);
+	const [mediaPrev, setMediaPrev] = useState(null);
+	const [highlited, setHighlited] = useState(false);
+	const inputRef = useRef();
 	const handelSubmit = (e) => {
 		e.preventDefault();
 	};
 
 	const handelChange = (e) => {
-		const { name, value } = e.target;
+		const { name, value, files } = e.target;
 		setUser((preval) => ({ ...preval, [name]: value }));
+
+		//forImage
+		if (name === "media") {
+			setMedia(files[0]);
+			setMediaPrev(URL.createObjectURL(files[0]));
+		}
 	};
 
 	const checkUserName = (e) => {
@@ -70,6 +80,15 @@ function signup() {
 				/>
 
 				<Segment>
+					<DragImageUpload
+						mediaPrev={mediaPrev}
+						setMediaPrev={setMediaPrev}
+						setMedia={setMedia}
+						inputRef={inputRef}
+						highlited={highlited}
+						setHighlited={setHighlited}
+						handelChange={handelChange}
+					/>
 					<Form.Input
 						required
 						label="Your Name"
@@ -130,6 +149,7 @@ function signup() {
 					/>
 					<Divider hidden />
 					<Button
+						icon="signup"
 						content="Register"
 						type="submit"
 						color="orange"
