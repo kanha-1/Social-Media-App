@@ -4,7 +4,19 @@ const followersModel = require("../../models/FollowerModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const isEmail = require("validator/lib/isEmail");
+
 module.exports = {
+	getData: async (req, res) => {
+		const { userId } = req;
+		try {
+			const user = await userModel.findById(userId);
+			const userFollowStatus = await followersModel.findOne({ user: userId });
+			return res.status(200).json({ user, userFollowStatus });
+		} catch (err) {
+			console.log(err);
+			return res.status(400).send("server error");
+		}
+	},
 	login: async (req, res) => {
 		const { email, password } = req.body.user;
 		if (!isEmail(email)) return res.status(401).send("Invalid Email");
