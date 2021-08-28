@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { HeaderMessage, FooterMessage } from "../components/common/Welcome";
 import SocialInput from "../components/common/SocialInput";
 import DragImageUpload from "../components/common/DragImageUpload";
-export const regexUserName = /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}$/;
+import axios from "axios";
+import baseUrl from "../utils/baseUrl";
+const regexUserName = /^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{0,29}$/;
+import { registerUser } from "../utils/authUser";
+import uploadPicture from "../utils/uploadPicToCloudinary";
 import {
 	Form,
 	Button,
@@ -15,7 +19,7 @@ import {
 function signup() {
 	const [user, setUser] = useState({
 		name: "",
-		emai: "",
+		email: "",
 		password: "",
 		about: "",
 		facebook: "",
@@ -26,7 +30,7 @@ function signup() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [errMsg, setErrMsg] = useState(null);
 	const [formLoading, setFormLoading] = useState(false);
-	const [userName, setUserName] = useState("");
+	const [username, setUserName] = useState("");
 	const [userNameLoading, setUserNameLoading] = useState(false);
 	const [userNameAvailable, setUserNameAvailable] = useState(false);
 	const [showSocialLinks, setShowSocialLinks] = useState(false);
@@ -35,21 +39,29 @@ function signup() {
 	const [mediaPrev, setMediaPrev] = useState(null);
 	const [highlited, setHighlited] = useState(false);
 	const inputRef = useRef();
-	const handelSubmit = (e) => {
+	let cancel;
+	const handelSubmit = async (e) => {
 		e.preventDefault();
+		// setFormLoading(true);
+		let profilePic;
+		if (media !== null) {
+			profilePic = await uploadPicture(media);
+		}
+		if (media !== null && !profilePic) {
+			setFormLoading(false);
+			return setErrMsg("Error Uploading Image");
+		}
+		await registerUser(user, profilePic, setErrMsg, setFormLoading);
 	};
-
 	const handelChange = (e) => {
 		const { name, value, files } = e.target;
 		setUser((preval) => ({ ...preval, [name]: value }));
-
 		//forImage
 		if (name === "media") {
 			setMedia(files[0]);
 			setMediaPrev(URL.createObjectURL(files[0]));
 		}
 	};
-
 	const checkUserName = (e) => {
 		setUserName(e.target.value);
 		if (regexUserName.test(e.target.value)) {
@@ -59,12 +71,41 @@ function signup() {
 		}
 	};
 
+	const userNameAvailablecheck = async () => {
+		setUserNameLoading(true);
+		try {
+			cancel && cancel();
+			const CancelToken = axios.CancelToken;
+			const response = await axios.get(
+				`${baseUrl}/user/api/signup/${username}`,
+				{
+					cancelToken: new CancelToken((canceler) => {
+						cancel = canceler;
+					}),
+				},
+			);
+			if(errMsg !== null)setErrMsg(null)
+			if (response.data === "Available") {
+				setUserNameAvailable(true);
+				setUser((prev) => ({ ...prev, username }));
+			}
+		} catch (err) {
+			setErrMsg("username not available");
+			setUserNameAvailable(false)
+		}
+		setUserNameLoading(false);
+	};
 	useEffect(() => {
 		const isUserTyped = Object.values({ name, email, password, about }).every(
 			(item) => Boolean(item),
 		);
 		isUserTyped ? setDesableSubmit(false) : setDesableSubmit(true);
 	}, [user]);
+
+	useEffect(() => {
+		username === "" ? setUserNameAvailable(false) : userNameAvailablecheck();
+	}, [username]);
+
 	return (
 		<>
 			<HeaderMessage />
@@ -135,7 +176,7 @@ function signup() {
 						required
 						label="Username"
 						placeholder="Please Choose a Username"
-						value={userName}
+						value={username}
 						onChange={checkUserName}
 						fluid
 						icon={userNameAvailable ? "check" : "close"}

@@ -45,7 +45,7 @@ function DragImageUpload({
 										<Icon
 											name="file image outline"
 											style={{ cursor: "pointer" }}
-											onCLick={() => inputRef.current.click()}
+											onClick={() => inputRef.current.click()}
 										/>
 										Drag and Drop or Click here to upload Image
 									</Header>

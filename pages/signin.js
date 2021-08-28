@@ -8,6 +8,8 @@ import {
 	Divider,
 	Segment,
 } from "semantic-ui-react";
+import { loginUser } from "../utils/authUser";
+
 function signin() {
     const [user, setUser] = useState({
         emai: "",
@@ -30,8 +32,9 @@ function signin() {
 		const { name, value } = e.target;
 		setUser((preval) => ({ ...preval, [name]: value }));
 	};
-	const handelSubmit = (e) => {
+	const handelSubmit =async (e) => {
 		e.preventDefault();
+		await loginUser(user, setErrMsg, setFormLoading)
 	};
 	return (
 		<>
