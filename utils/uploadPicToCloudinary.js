@@ -5,7 +5,7 @@ const uploadPic = async (media) => {
 		data.append("file", media);
 		data.append("upload_preset", "social_media");
 		data.append("cloud_name", "dsseuwzzr");
-		const response = axios.post(process.env.cloudinary_url, data);
+		const response = await axios.post(process.env.cloudinary_url, data);
 		return response.data.url;
 	} catch (error) {
 		return;

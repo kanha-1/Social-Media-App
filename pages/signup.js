@@ -42,7 +42,7 @@ function signup() {
 	let cancel;
 	const handelSubmit = async (e) => {
 		e.preventDefault();
-		// setFormLoading(true);
+		setFormLoading(true);
 		let profilePic;
 		if (media !== null) {
 			profilePic = await uploadPicture(media);
