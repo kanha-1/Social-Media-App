@@ -42,4 +42,5 @@ export const redirectUser = (ctx, location) => {
 };
 const setToken = (token) => {
 	cookie.set("token", token);
+	Router.push('/')
 };
